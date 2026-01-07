@@ -1,1 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>2025 NFL Schedule</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+    }
+    .container {
+      width: 100%;
+      max-width: none;
+      min-height: 100vh;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    h1, h2 {
+      margin-bottom: 10px;
+    }
+    select {
+      padding: 8px;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+    .week {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      background: #fafafa;
+    }
+    .game {
+      padding: 6px 0;
+    }
+    .bye {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>2025 NFL Season Schedule</h1>
+
+  <label><strong>View Schedule:</strong></label><br>
+  <select id="teamSelect" onchange="renderSchedule()">
+    <option value="all">All Games (Week by Week)</option>
+  </select>
+
+  <div id="schedule"></div>
+</div>
+
+<script>
+const teams = [
+  "Empire","Titans","Patriots","Browns","Colts","Vikings",
+  "Kings","Bears","Cowboys","Outlaws","49ers","Seahawks","Panthers"
+];
+
+const schedule = [
+  { week:1, games:[{home:"Empire",away:"Titans"},{home:"Patriots",away:"Browns"},{home:"Colts",away:"Vikings"},{home:"Kings",away:"Bears"},{home:"Cowboys",away:"Outlaws"},{home:"49ers",away:"Seahawks"}], bye:["Panthers"] },
+  { week:2, games:[{home:"Browns",away:"Empire"},{home:"Titans",away:"Patriots"},{home:"Vikings",away:"Kings"},{home:"Bears",away:"Colts"},{home:"Outlaws",away:"49ers"},{home:"Seahawks",away:"Cowboys"}], bye:["Panthers"] },
+  { week:3, games:[{home:"Empire",away:"Patriots"},{home:"Browns",away:"Titans"},{home:"Kings",away:"Colts"},{home:"Vikings",away:"Bears"},{home:"Cowboys",away:"49ers"},{home:"Panthers",away:"Seahawks"}], bye:["Outlaws"] },
+  { week:4, games:[{home:"Patriots",away:"Titans"},{home:"Empire",away:"Browns"},{home:"Colts",away:"Kings"},{home:"Bears",away:"Vikings"},{home:"49ers",away:"Seahawks"},{home:"Panthers",away:"Outlaws"}], bye:["Cowboys"] },
+  { week:5, games:[{home:"Titans",away:"Browns"},{home:"Patriots",away:"Empire"},{home:"Vikings",away:"Colts"},{home:"Kings",away:"Bears"},{home:"Outlaws",away:"Cowboys"},{home:"Panthers",away:"49ers"}], bye:["Seahawks"] },
+  { week:6, games:[{home:"Empire",away:"Colts"},{home:"Browns",away:"Patriots"},{home:"Titans",away:"Vikings"},{home:"Kings",away:"Cowboys"},{home:"Seahawks",away:"Outlaws"},{home:"Panthers",away:"Bears"}], bye:["49ers"] },
+  { week:7, games:[{home:"Patriots",away:"Colts"},{home:"Empire",away:"Vikings"},{home:"Browns",away:"Kings"},{home:"Titans",away:"Bears"},{home:"Cowboys",away:"Seahawks"},{home:"49ers",away:"Outlaws"}], bye:["Panthers"] },
+  { week:8, games:[{home:"Colts",away:"Titans"},{home:"Vikings",away:"Empire"},{home:"Kings",away:"Patriots"},{home:"Bears",away:"Browns"},{home:"Outlaws",away:"Panthers"},{home:"Seahawks",away:"49ers"}], bye:["Cowboys"] },
+  { week:9, games:[{home:"Empire",away:"Kings"},{home:"Patriots",away:"Vikings"},{home:"Browns",away:"Colts"},{home:"Titans",away:"49ers"},{home:"Cowboys",away:"Panthers"},{home:"Bears",away:"Seahawks"}], bye:["Outlaws"] },
+  { week:10, games:[{home:"Colts",away:"Browns"},{home:"Vikings",away:"Patriots"},{home:"Kings",away:"Empire"},{home:"49ers",away:"Titans"},{home:"Panthers",away:"Outlaws"},{home:"Seahawks",away:"Bears"}], bye:["Cowboys"] },
+  { week:11, games:[{home:"Empire",away:"49ers"},{home:"Patriots",away:"Kings"},{home:"Titans",away:"Colts"},{home:"Cowboys",away:"Bears"},{home:"Outlaws",away:"Seahawks"},{home:"Panthers",away:"Browns"}], bye:["Vikings"] },
+  { week:12, games:[{home:"Vikings",away:"Titans"},{home:"Colts",away:"Empire"},{home:"Kings",away:"Browns"},{home:"49ers",away:"Bears"},{home:"Seahawks",away:"Cowboys"},{home:"Panthers",away:"Colts"}], bye:["Outlaws"] },
+  { week:13, games:[{home:"Titans",away:"Empire"},{home:"Browns",away:"Patriots"},{home:"Vikings",away:"Colts"},{home:"Bears",away:"Kings"},{home:"Cowboys",away:"Outlaws"},{home:"49ers",away:"Panthers"}], bye:["Seahawks"] },
+  { week:14, games:[{home:"Empire",away:"Browns"},{home:"Patriots",away:"Titans"},{home:"Kings",away:"Vikings"},{home:"Panthers",away:"Bears"},{home:"Outlaws",away:"49ers"},{home:"Seahawks",away:"Cowboys"}], bye:["Colts"] },
+  { week:15, games:[{home:"Browns",away:"Titans"},{home:"Empire",away:"Panthers"},{home:"Vikings",away:"Patriots"},{home:"Kings",away:"Colts"},{home:"49ers",away:"Cowboys"},{home:"Outlaws",away:"Bears"}], bye:["Seahawks"] },
+  { week:16, games:[{home:"Titans",away:"Patriots"},{home:"Vikings",away:"Kings"},{home:"Bears",away:"Cowboys"},{home:"49ers",away:"Seahawks"},{home:"Outlaws",away:"Panthers"},{home:"Browns",away:"Empire"}], bye:["Colts"] },
+  { week:17, games:[{home:"Empire",away:"Outlaws"},{home:"Browns",away:"Colts"},{home:"Kings",away:"Seahawks"},{home:"Panthers",away:"Cowboys"},{home:"Patriots",away:"49ers"},{home:"Titans",away:"Vikings"}], bye:["Bears"] },
+  { week:18, games:[{home:"Patriots",away:"Empire"},{home:"Titans",away:"Browns"},{home:"Colts",away:"Vikings"},{home:"Seahawks",away:"Kings"},{home:"Cowboys",away:"49ers"},{home:"Bears",away:"Outlaws"}], bye:["Panthers"] }
+];
+
+// Populate dropdown
+const select = document.getElementById("teamSelect");
+teams.sort().forEach(team => {
+  const opt = document.createElement("option");
+  opt.value = team;
+  opt.textContent = team;
+  select.appendChild(opt);
+});
+
+function renderSchedule() {
+  const selected = select.value;
+  const container = document.getElementById("schedule");
+  container.innerHTML = "";
+
+  if (selected === "all") {
+    schedule.forEach(week => {
+      const div = document.createElement("div");
+      div.className = "week";
+      div.innerHTML = `<h2>Week ${week.week}</h2>`;
+      
+      week.games.forEach(g => {
+        div.innerHTML += `<div class="game"><strong>${g.home}</strong> vs <strong>${g.away}</strong></div>`;
+      });
+
+      if (week.bye.length) {
+        div.innerHTML += `<div class="bye"><strong>BYE:</strong> ${week.bye.join(", ")}</div>`;
+      }
+      container.appendChild(div);
+    });
+  } else {
+    schedule.forEach(week => {
+      const game = week.games.find(g => g.home === selected || g.away === selected);
+      if (game) {
+        const opp = game.home === selected ? game.away : game.home;
+        const loc = game.home === selected ? "Home" : "Away";
+        container.innerHTML += `<div class="week">
+          <strong>Week ${week.week}:</strong> ${loc === "Home" ? "vs" : "@"} ${opp} (${loc})
+        </div>`;
+      } else if (week.bye.includes(selected)) {
+        container.innerHTML += `<div class="week"><strong>Week ${week.week}:</strong> BYE</div>`;
+      }
+    });
+  }
+}
+
+renderSchedule();
+</script>
+
+</body>
+</html>
 
